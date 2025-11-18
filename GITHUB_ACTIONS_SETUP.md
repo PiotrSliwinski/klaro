@@ -22,7 +22,29 @@ Deployments are triggered on:
 
 ## Setup Instructions
 
-### Step 1: Create a GCP Service Account
+You can set up the service account either automatically using a script or manually through the GCP Console.
+
+### Quick Setup (Recommended)
+
+Use the provided script to automatically create the service account with all required permissions:
+
+```bash
+./setup-service-account.sh
+```
+
+This script will:
+- Enable all required GCP APIs
+- Create the service account
+- Grant all necessary IAM roles
+- Generate and download the JSON key file
+
+Then follow the on-screen instructions to add the secrets to GitHub.
+
+### Manual Setup
+
+If you prefer to set up the service account manually:
+
+#### Step 1: Create a GCP Service Account
 
 1. Go to [GCP Console - IAM & Admin - Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts)
 
@@ -37,12 +59,14 @@ Deployments are triggered on:
 5. Grant the following roles:
    - **Cloud Run Admin** (`roles/run.admin`)
    - **Service Account User** (`roles/iam.serviceAccountUser`)
-   - **Storage Admin** (`roles/storage.admin`) - for GCR
+   - **Storage Admin** (`roles/storage.admin`)
    - **Cloud Build Editor** (`roles/cloudbuild.builds.editor`)
+   - **Service Usage Consumer** (`roles/serviceusage.serviceUsageConsumer`)
+   - **Artifact Registry Administrator** (`roles/artifactregistry.admin`)
 
 6. Click "CONTINUE" and then "DONE"
 
-### Step 2: Create and Download Service Account Key
+#### Step 2: Create and Download Service Account Key
 
 1. Find your newly created service account in the list
 
@@ -58,7 +82,7 @@ Deployments are triggered on:
 
 7. The key file will download automatically. **Keep this file secure!**
 
-### Step 3: Enable Required GCP APIs
+#### Step 3: Enable Required GCP APIs
 
 Run these commands in Google Cloud Shell or locally with gcloud:
 
@@ -74,7 +98,7 @@ gcloud services enable containerregistry.googleapis.com
 gcloud services enable cloudbuild.googleapis.com
 ```
 
-### Step 4: Add GitHub Secrets
+#### Step 4: Add GitHub Secrets
 
 1. Go to your GitHub repository
 
@@ -93,6 +117,8 @@ gcloud services enable cloudbuild.googleapis.com
    - **Value**: The entire contents of the JSON key file you downloaded
    - Open the JSON file in a text editor and copy everything
    - Paste it into the secret value field
+
+## After Setup: Using the Workflow
 
 ### Step 5: Customize the Workflow (Optional)
 
