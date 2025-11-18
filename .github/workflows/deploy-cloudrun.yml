@@ -11,7 +11,6 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE_NAME: klaro-consent
   REGION: us-central1
-  IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}/klaro-consent
 
 jobs:
   deploy:
@@ -34,24 +33,10 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Configure Docker for GCR
-        run: |
-          gcloud auth configure-docker
-
-      - name: Build Docker image
-        run: |
-          docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
-          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.IMAGE_NAME }}:latest
-
-      - name: Push Docker image to GCR
-        run: |
-          docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          docker push ${{ env.IMAGE_NAME }}:latest
-
-      - name: Deploy to Cloud Run
+      - name: Build and Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --source . \
             --platform managed \
             --region ${{ env.REGION }} \
             --allow-unauthenticated \

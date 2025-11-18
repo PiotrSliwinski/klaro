@@ -9,7 +9,6 @@ set -e  # Exit on error
 PROJECT_ID="${GCP_PROJECT_ID:-your-project-id}"
 SERVICE_NAME="${SERVICE_NAME:-klaro-consent}"
 REGION="${REGION:-us-central1}"
-IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -30,14 +29,12 @@ fi
 if [ "$PROJECT_ID" = "your-project-id" ]; then
     echo -e "${YELLOW}Please enter your Google Cloud Project ID:${NC}"
     read -r PROJECT_ID
-    IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 fi
 
 echo "Configuration:"
 echo "  Project ID: $PROJECT_ID"
 echo "  Service Name: $SERVICE_NAME"
 echo "  Region: $REGION"
-echo "  Image: $IMAGE_NAME"
 echo ""
 
 # Set the project
@@ -48,16 +45,13 @@ gcloud config set project "$PROJECT_ID"
 echo -e "${GREEN}Enabling required APIs...${NC}"
 gcloud services enable cloudbuild.googleapis.com
 gcloud services enable run.googleapis.com
-gcloud services enable containerregistry.googleapis.com
+gcloud services enable artifactregistry.googleapis.com
 
-# Build the container image
-echo -e "${GREEN}Building container image...${NC}"
-gcloud builds submit --tag "$IMAGE_NAME" .
-
-# Deploy to Cloud Run
-echo -e "${GREEN}Deploying to Cloud Run...${NC}"
+# Build and Deploy to Cloud Run (using source-based deployment)
+echo -e "${GREEN}Building and deploying to Cloud Run...${NC}"
+echo "This will use Cloud Build to build the Docker image and deploy it."
 gcloud run deploy "$SERVICE_NAME" \
-  --image "$IMAGE_NAME" \
+  --source . \
   --platform managed \
   --region "$REGION" \
   --allow-unauthenticated \
